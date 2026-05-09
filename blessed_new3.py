@@ -113,6 +113,8 @@ driver.quit()
 
 pages = list(seen_pages.values())
 
+pages = sorted(pages, key=page_id)
+
 driver = webdriver.Firefox(
     service=service,
     options=options

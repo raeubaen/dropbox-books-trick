@@ -43,8 +43,6 @@ def page_id(p):
     m = re.search(r"pageContainer(\d+)", p.get("id",""))
     return int(m.group(1)) if m else 0
 
-pages = sorted(pages, key=page_id)
-
 def extract_single_svg_class(page):
     svg = page.find("svg")
     if not svg:
