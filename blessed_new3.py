@@ -13,37 +13,52 @@ from selenium.common.exceptions import TimeoutException
 
 from functions import *
 
+import argparse
 
-#mandarlo in argparse
-URL = "https://www.dropbox.com/scl/fi/5wysmbfkvb69ks6f1ntq9/Arabia-Francesco-Saverio-Sorrento-Napoli-Tip.-della-Regia-Universit-1899.pdf?rlkey=6wj0r6l64tzdko6ut7ado4i10&e=4&st=39baj82d&dl=0"
+print("init")
 
-#mandarlo in argparse
-OUT_DIR = "pages_html"
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--url", required=True)
+parser.add_argument("--out_dir", default="pages_html")
+parser.add_argument("--firefox_bin", default="/usr/bin/firefox")
+parser.add_argument("--geckodriver", default="/home/ruben/Downloads/geckodriver")
+
+args = parser.parse_args()
+
+print("parsing")
+
+URL = args.url
+
+OUT_DIR = args.out_dir
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
 options = Options()
+options.add_argument("--headless")
 options.headless = True
+options.binary_location = args.firefox_bin
 
-#mandarlo in argparse
-options.binary_location = "/usr/bin/firefox"
+service = Service(executable_path=args.geckodriver)
 
-#mandarlo in argparse
-service = Service(executable_path="/home/ruben/Downloads/geckodriver")
-
+print("accendendo firefox")
 driver = webdriver.Firefox(service=service, options=options)
 
-
+print("caricando la pagina")
 driver.get(URL)
+print("sleep 5")
 time.sleep(5)
 
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+print("scrolling")
+driver.find_element("tag name", "body").send_keys(Keys.PAGE_DOWN)
+print("sleep 3")
 time.sleep(3)
 
 seen_pages = {}
 last_new_pages = 0
 stuck_counter = 0
 
+print("entrando nel loop di scroll")
 while True:
 
     html = driver.page_source
@@ -61,7 +76,7 @@ while True:
 
         if pid not in seen_pages:
 
-            print("aspettando")
+            print("aspettando immagine, pagina: ", pid)
             try:
               src = WebDriverWait(driver, 30).until(
                   lambda d: d.execute_script(f"""
@@ -83,10 +98,10 @@ while True:
 
             time.sleep(0.3)
 
-            print("OKAY:", src)
+            print("disponibile immagine, src:", src)
 
             fresh_el = driver.find_element("id", pid)
-            html = fresh_el.get_attribute("outerHTML")
+            html = driver.execute_script("return arguments[0].outerHTML;", fresh_el)
             p_bs = BeautifulSoup(html, "html.parser")
 
             seen_pages[pid] = p_bs
