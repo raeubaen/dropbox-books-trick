@@ -25,9 +25,9 @@ def run(name, url, out_dir, firefox_bin, geckodriver):
   options = Options()
   options.add_argument("--headless")
   options.headless = True
-  options.binary_location = args.firefox_bin
+  options.binary_location = firefox_bin
 
-  service = Service(executable_path=args.geckodriver)
+  service = Service(executable_path=geckodriver)
 
   print("accendendo firefox")
   driver = webdriver.Firefox(service=service, options=options)
